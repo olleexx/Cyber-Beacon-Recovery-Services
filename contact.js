@@ -103,6 +103,8 @@
     e.preventDefault();
     e.stopPropagation();
     ok.style.display = fail.style.display = 'none';
+    const label = btn.textContent;
+    syncRecovery(); // make sure the recovery box matches the chosen radio before validating
 
     let firstBad = null;
     for (const [id, test, sel] of checks) {
@@ -146,12 +148,31 @@
       for (const [k, v] of Object.entries({ ...payload, _next: location.href.split(/[?#]/)[0] + '?sent=1' })) {
         const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i);
       }
-      fileInputs().filter((i) => i.files.length).forEach((i) => f.appendChild(i)); // moves the real file inputs, keeping their files
+      // Copy each chosen file into the hidden form (originals stay in the visible form, so a failed send can be retried)
+      fileInputs().filter((i) => i.files.length).forEach((i) => {
+        try {
+          const c = document.createElement('input');
+          c.type = 'file'; c.name = i.name;
+          const dt = new DataTransfer();
+          [...i.files].forEach((file) => dt.items.add(file));
+          c.files = dt.files;
+          f.appendChild(c);
+        } catch (_) {
+          f.appendChild(i); // very old browsers without DataTransfer: fall back to moving the input
+        }
+      });
       document.body.appendChild(f);
       HTMLFormElement.prototype.submit.call(f);
+      // If the browser has not navigated away after 90 s, the upload failed: unlock the form and show the fallback
+      setTimeout(() => {
+        f.remove();
+        btn.disabled = false; btn.textContent = label;
+        $('fail-mail').href = mailtoFor(payload);
+        fail.style.display = 'block';
+        fail.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 90000);
       return;
     }
-    const label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Submitting...';
     try {
       if (!endpoint) throw new Error('No endpoint configured');
@@ -178,6 +199,9 @@
       btn.disabled = false; btn.textContent = label;
     }
   }, true);
+
+  // Browsers can restore field values on back/reload without firing change events: resync the dependent UI
+  syncRecovery(); updEvidence(); syncFiles();
 
   // Shown after the standard-post route redirects back here
   if (new URLSearchParams(location.search).get('sent') === '1') {
