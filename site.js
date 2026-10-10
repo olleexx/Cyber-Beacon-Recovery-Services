@@ -21,3 +21,16 @@ let ok=true;for(const k in r){$(k).classList.toggle('bad',!r[k]);if(!r[k])ok=fal
 $('ok').style.display='block';
 const body=`Name: ${$('name').value}\nEmail: ${$('email').value}\nCountry: ${$('country').value}\nIncident: ${$('type').value}\n\n${$('msg').value}`;
 location.href='mailto:cyberbeaconrecoveryservices@gmail.com?subject='+encodeURIComponent('New case: '+$('type').value)+'&body='+encodeURIComponent(body)});
+/* Live chat (Tawk.to). Paste your Property ID (and Widget ID if it isn't "default") below. Leave PROPERTY empty to turn chat off. */
+(()=>{
+const PROPERTY='6ac99ccc61cd3634bb651cdc',WIDGET='1k4hop0nv';
+if(!PROPERTY)return;
+window.Tawk_API=window.Tawk_API||{};window.Tawk_LoadStart=new Date();
+window.Tawk_API.customStyle={visibility:{desktop:{position:'br',xOffset:20,yOffset:20},mobile:{position:'br',xOffset:12,yOffset:12}}};
+const load=()=>{const s=document.createElement('script');s.async=true;s.src=`https://embed.tawk.to/${PROPERTY}/${WIDGET}`;s.charset='UTF-8';s.setAttribute('crossorigin','*');document.head.appendChild(s)};
+/* load shortly after the page finishes so chat never slows the first view */
+if(document.readyState==='complete')setTimeout(load,1500);else addEventListener('load',()=>setTimeout(load,1500));
+/* any element with data-open-chat opens the chat window (falls back to the contact page if chat hasn't loaded yet) */
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open-chat]');if(!t)return;e.preventDefault();
+if(window.Tawk_API&&typeof Tawk_API.maximize==='function')Tawk_API.maximize();else location.href='contact.html'});
+})();
