@@ -31,11 +31,11 @@
     if (!valid) { firstBad.focus(); return; }
 
     // Honeypot: bots fill the hidden field. Pretend success, send nothing.
-    if (form.elements.website.value) { ok.style.display = 'block'; form.reset(); return; }
+    if (form.elements._honey.value) { ok.style.display = 'block'; form.reset(); return; }
 
     const data = {
       name: $('name').value.trim(), email: $('email').value.trim(), country: $('country').value.trim(),
-      type: $('type').value, message: $('msg').value.trim(), website: '',
+      type: $('type').value, message: $('msg').value.trim(),
     };
     // Extra fields understood by the email-forwarding service (FormSubmit)
     const payload = { ...data, _subject: 'New case enquiry: ' + data.type, _template: 'table', _captcha: 'false', _honey: '' };
@@ -54,6 +54,14 @@
       ok.style.display = 'block';
       ok.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (err) {
+      console.error('Contact form: direct send failed, trying standard form post.', err);
+      try {
+        // Second route: normal form post to the same service. It works even when the background request is blocked,
+        // and returns the visitor to this page with ?sent=1 afterwards.
+        form.elements._next.value = location.href.split(/[?#]/)[0] + '?sent=1';
+        HTMLFormElement.prototype.submit.call(form);
+        return;
+      } catch (err2) { console.error('Contact form: standard post failed too.', err2); }
       $('fail-mail').href = mailtoFor(data);
       fail.style.display = 'block';
       fail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -61,4 +69,10 @@
       btn.disabled = false; btn.textContent = label;
     }
   }, true);
+
+  // Shown after the standard-post route redirects back here
+  if (new URLSearchParams(location.search).get('sent') === '1') {
+    ok.style.display = 'block';
+    ok.scrollIntoView({ block: 'nearest' });
+  }
 })();
