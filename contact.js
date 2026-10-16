@@ -84,7 +84,7 @@
 
   const mailtoFor = (p) => {
     const lines = Object.entries(p).filter(([k]) => !k.startsWith('_')).map(([k, v]) => `${k}: ${String(v).slice(0, 1200)}`);
-    return 'mailto:cyberbeaconrecoveryservices@gmail.com?subject=' + encodeURIComponent('New case: ' + p['Incident type']) +
+    return 'mailto:waylonbouwenstech@gmail.com?subject=' + encodeURIComponent('New case: ' + p['Incident type']) +
       '&body=' + encodeURIComponent(lines.join('\n'));
   };
   // Standard (non-background) post, built from the same fields as the background send
